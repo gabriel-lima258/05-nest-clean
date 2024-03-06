@@ -6,8 +6,8 @@ POST {{baseUrl}}/accounts
 Content-Type: application/json
 
 {
-  "name": "Gabriel Lima",
-  "email": "amanda@gmail.com",
+  "name": "Mario",
+  "email": "mario@gmail.com",
   "password": "123456"
 }
 
@@ -18,7 +18,7 @@ POST {{baseUrl}}/sessions
 Content-Type: application/json
 
 {
-  "email": "amanda@gmail.com",
+  "email": "mario@gmail.com",
   "password": "123456"
 }
 
