@@ -1,3 +1,4 @@
+import { Slug } from '@/domain/forum/enterprise/entities/value-objects/slug'
 import { AppModule } from '@/infra/app.module'
 import { DatabaseModule } from '@/infra/database/database.module'
 import { INestApplication } from '@nestjs/common'
@@ -7,7 +8,7 @@ import request from 'supertest'
 import { QuestionFactory } from 'test/factories/make-question'
 import { StudentFactory } from 'test/factories/make-student'
 
-describe('Fetch recent questions (E2E)', () => {
+describe('Get question by slug (E2E)', () => {
   let app: INestApplication
   let studentFactory: StudentFactory
   let questionFactory: QuestionFactory
@@ -30,36 +31,28 @@ describe('Fetch recent questions (E2E)', () => {
     await app.init()
   })
 
-  test('[GET] /questions', async () => {
+  test('[GET] /questions/:slug', async () => {
     // create user
     const user = await studentFactory.makePrismaStudent()
 
-    // get its token
+    // get its token / toString because is from domain pattern
     const accessToken = jwt.sign({ sub: user.id.toString() })
 
-    // promise all make many requests
-    await Promise.all([
-      questionFactory.makePrismaQuestion({
-        authorId: user.id,
-        title: 'Question 01',
-      }),
-      questionFactory.makePrismaQuestion({
-        authorId: user.id,
-        title: 'Question 02',
-      }),
-    ])
+    // create question
+    await questionFactory.makePrismaQuestion({
+      authorId: user.id,
+      slug: Slug.create('question-01'),
+      title: 'Question 01',
+    })
 
-    // create many question
     const response = await request(app.getHttpServer())
-      .get('/questions')
-      .set('Authorization', `Bearer ${accessToken}`)
+      .get(`/questions/question-01`)
+      .set('Authorization', `Bearer ${accessToken}`) // set authorization
       .send()
+
     expect(response.statusCode).toBe(200)
     expect(response.body).toEqual({
-      questions: expect.arrayContaining([
-        expect.objectContaining({ title: 'Question 01' }),
-        expect.objectContaining({ title: 'Question 02' }),
-      ]),
+      question: expect.objectContaining({ title: 'Question 01' }),
     })
   })
 })
