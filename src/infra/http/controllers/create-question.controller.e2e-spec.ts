@@ -5,11 +5,13 @@ import { INestApplication } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { Test } from '@nestjs/testing'
 import request from 'supertest'
+import { AttachmentFactory } from 'test/factories/make-attachment'
 import { StudentFactory } from 'test/factories/make-student'
 
 describe('Create question (E2E)', () => {
   let app: INestApplication
   let prisma: PrismaService
+  let attachmentFactory: AttachmentFactory
   let studentFactory: StudentFactory
   let jwt: JwtService
 
@@ -17,13 +19,14 @@ describe('Create question (E2E)', () => {
     // module to start server without the official server
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule, DatabaseModule],
-      providers: [StudentFactory],
+      providers: [StudentFactory, AttachmentFactory],
     }).compile()
 
     app = moduleRef.createNestApplication()
 
     // get prisma and jwt from inside the module
     prisma = moduleRef.get(PrismaService)
+    attachmentFactory = moduleRef.get(AttachmentFactory)
     studentFactory = moduleRef.get(StudentFactory)
     jwt = moduleRef.get(JwtService)
 
@@ -37,6 +40,10 @@ describe('Create question (E2E)', () => {
     // get its token
     const accessToken = jwt.sign({ sub: user.id.toString() })
 
+    // create attachments
+    const attachment1 = await attachmentFactory.makePrismaAttachment()
+    const attachment2 = await attachmentFactory.makePrismaAttachment()
+
     // create a new question
     const response = await request(app.getHttpServer())
       .post('/questions')
@@ -44,6 +51,7 @@ describe('Create question (E2E)', () => {
       .send({
         title: 'New Question',
         content: 'Question content',
+        attachments: [attachment1.id.toString(), attachment2.id.toString()],
       })
 
     expect(response.statusCode).toBe(201)
@@ -56,5 +64,14 @@ describe('Create question (E2E)', () => {
     })
 
     expect(questionOnDatabase).toBeTruthy()
+
+    // verify how many attachment exist on database
+    const attachmentsOnDatabase = await prisma.attachment.findMany({
+      where: {
+        questionId: questionOnDatabase?.id,
+      },
+    })
+
+    expect(attachmentsOnDatabase).toHaveLength(2)
   })
 })

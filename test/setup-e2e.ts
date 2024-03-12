@@ -1,8 +1,12 @@
-import 'dotenv/config'
+import { config } from 'dotenv'
 
 import { PrismaClient } from '@prisma/client'
 import { randomUUID } from 'crypto'
 import { execSync } from 'child_process'
+
+// loading env variables, if it exists a same names in test override them
+config({ path: '.env', override: true })
+config({ path: '.env.test', override: true })
 
 const prisma = new PrismaClient()
 

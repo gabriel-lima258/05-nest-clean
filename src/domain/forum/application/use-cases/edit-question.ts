@@ -28,7 +28,7 @@ type EditQuestionUseCaseResponse = Either<
 export class EditQuestionUseCase {
   constructor(
     private questionRepository: QuestionRepository,
-    private questionAttachementsRepository: QuestionAttachmentsRepository,
+    private questionAttachmentsRepository: QuestionAttachmentsRepository,
   ) {}
 
   async execute({
@@ -51,7 +51,7 @@ export class EditQuestionUseCase {
 
     // search previous attachments before edit
     const currentQuestionAttachments =
-      await this.questionAttachementsRepository.findManyByQuestionId(questionId)
+      await this.questionAttachmentsRepository.findManyByQuestionId(questionId)
     // set attachments to watched list
     const questionAttachmentsList = new QuestionAttachmentList(
       currentQuestionAttachments,
@@ -69,9 +69,9 @@ export class EditQuestionUseCase {
     questionAttachmentsList.update(questionAttachments)
 
     // changing the content, title and attachment
+    question.attachments = questionAttachmentsList
     question.title = title
     question.content = content
-    question.attachments = questionAttachmentsList
 
     // edit a question
     await this.questionRepository.save(question)

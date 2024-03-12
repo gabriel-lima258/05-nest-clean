@@ -15,6 +15,11 @@ export class InMemoryQuestionsRepository implements QuestionRepository {
   async create(question: Question) {
     this.items.push(question)
 
+    // save questions attachments on repository
+    await this.questionAttachmentsRepository.createMany(
+      question.attachments.getItems(),
+    )
+
     // calling DB to create dispatch for domain events
     DomainEvents.dispatchEventsForAggregate(question.id)
   }
@@ -36,6 +41,16 @@ export class InMemoryQuestionsRepository implements QuestionRepository {
 
     // replace an item from another question
     this.items[itemIndex] = question
+
+    // save only new attachments
+    await this.questionAttachmentsRepository.createMany(
+      question.attachments.getNewItems(),
+    )
+
+    // save new attachments and delete witth watched list
+    await this.questionAttachmentsRepository.deleteMany(
+      question.attachments.getRemovedItems(),
+    )
 
     // calling DB to create dispatch for domain events
     DomainEvents.dispatchEventsForAggregate(question.id)
