@@ -3,6 +3,7 @@ import { config } from 'dotenv'
 import { PrismaClient } from '@prisma/client'
 import { randomUUID } from 'crypto'
 import { execSync } from 'child_process'
+import { DomainEvents } from '@/core/events/domain-events'
 
 // loading env variables, if it exists a same names in test override them
 config({ path: '.env', override: true })
@@ -30,6 +31,9 @@ beforeAll(async () => {
 
   // subscribe Database_url the new one
   process.env.DATABASE_URL = databaseURL
+
+  // no event will be dispatched until set as true
+  DomainEvents.shouldRun = false
 
   // run on terminal the migration
   execSync('npx prisma migrate deploy')

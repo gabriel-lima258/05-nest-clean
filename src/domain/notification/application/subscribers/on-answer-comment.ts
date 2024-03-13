@@ -3,7 +3,9 @@ import { EventHandler } from '@/core/events/event-handler'
 import { SendNotificationUseCase } from '../use-cases/send-notification'
 import { AnswerCommentEvent } from '@/domain/forum/enterprise/events/answer-comment-event'
 import { AnswerRepository } from '@/domain/forum/application/repositories/answer-repository'
+import { Injectable } from '@nestjs/common'
 
+@Injectable()
 export class OnAnswerComment implements EventHandler {
   // use question repository to link to answer
   constructor(
