@@ -40,7 +40,7 @@ export class ReadNotificationUseCase {
     notification.read()
 
     // save the notification in the notification repository
-    await this.notificationRepository.create(notification)
+    await this.notificationRepository.save(notification)
 
     return right({
       notification,
